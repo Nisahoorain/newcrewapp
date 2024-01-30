@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Set API Key</title>
+</head>
+
+<body>
+    {% if not session.user_id %}
+    <form action="/set_api_key" method="post">
+        <label for="openai_api_key">OpenAI API Key:</label><br>
+        <input type="text" id="openai_api_key" name="openai_api_key" required><br>
+        <input type="submit" value="Set API Key">
+    </form>
+    {% endif %}
+
+    <h2>Add a CrewAI Agent</h2>
+    <form action="/create_agent" method="post">
+        <label for="role">Role:</label><br>
+        <p style="font-size: 12px; padding: 0; margin: 0;">Think of it like a job title for the AI. What should we call
+            the AI's position or function? Examples could be "Chat Assistant" or "Task Manager."</p>
+        <input type="text" id="role" name="role" required><br>
+
+        <label for="goal">Goal:</label><br>
+        <p style="font-size: 12px; padding: 0; margin: 0;">What's the main thing we want the AI to achieve? Is it
+            helping people with tasks, providing information, or something else? Describe the AI's primary purpose or
+            objective.</p>
+        <input type="text" id="goal" name="goal" required><br>
+
+        <label>Verbose:</label><br>
+        <div style="display: flex;width: 20px ;">
+            <input type="radio" id="verbose_true" name="verbose" value="true" required>
+            <label style="margin-top:0px;" for="verbose_true">True</label><br>
+        </div>
+        <div style="display: flex;width: 20px ;">
+            <input type="radio" id="verbose_false" name="verbose" value="false" required>
+            <label style="margin-top:0px;" for="verbose_false">False</label><br>
+        </div>
+
+
+        <label for="backstory">Backstory:</label><br>
+        <p style="font-size: 12px; padding: 0; margin: 0;">Imagine the AI as a character. What's its background story or
+            history? This could include details about how it was trained, what data it learned from, or any unique
+            features that make it special.</p>
+        <input type="text" id="backstory" name="backstory" required><br>
+
+        <label>Allow Delegation:</label><br>
+        <div style="display: flex;width: 20px ;">
+            <input type="radio" id="delegation_true" name="allow_delegation" required value="true">
+            <label style="margin-top:0px;" for="delegation_true">True</label><br>
+        </div>
+
+        <div style="display: flex;width: 20px ;">
+            <input type="radio" id="delegation_false" name="allow_delegation" required value="false">
+            <label style="margin-top:0px;" for="delegation_false">False</label><br>
+
+        </div>
+
+        <input type="submit" value="Add Agent">
+    </form>
+
+
+    <h2>Assign a Task for CrewAI Agent</h2>
+    <form action="/create_task" method="post">
+        <label for="selected_agent">Select Agent:</label><br>
+        <select id="selected_agent" name="selected_agent" required>
+            <option value="">Select an Agent</option>
+            {% for agent in agents %}
+            <option value="{{ agent.id }}">{{ agent.role }}</option>
+            {% endfor %}
+        </select><br>
+
+        <label for="task_name">Task Name:</label><br>
+        <input type="text" id="task_name" name="task_name" required><br>
+
+        <label for="task_description">Task Description:</label><br>
+        <input type="text" id="task_description" name="task_description" required><br>
+
+        <input type="submit" value="Add Task">
+    </form>
+
+
+    <!-- Existing HTML code ... -->
+
+    <h2>Your Tasks</h2>
+    <form action="/execute_tasks" method="post">
+
+    <table>
+        <tr>
+            <th>Task Name</th>
+            <th>Description</th>
+            <th>Assigned Agent</th>
+            <th>Actions</th>
+        </tr>
+        {% for task in tasks %}
+        <tr>
+            <td>
+                <input type="checkbox" name="selected_tasks" value="{{ task.id }}">
+            </td>
+            <td>{{ task.task_name }}</td>
+            <td>{{ task.task_description }}</td>
+            <td>{{ task.agent_id }}</td>
+            <td>
+                <form action="/delete_task" method="post">
+                    <input type="hidden" name="task_id" value="{{ task.id }}">
+                    <input type="submit" value="Delete">
+                </form>
+                <form action="/reassign_task" method="post">
+                    <input type="hidden" name="task_id" value="{{ task.id }}">
+                    <select name="new_agent_id">
+                        <option value="">-- Select Agent --</option>
+                        {% for agent in agents %}
+                        <option value="{{ agent.id }}" {% if agent.id==task.agent_id %} selected {% endif %}>{{
+                            agent.role }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="submit" value="Reassign">
+                </form>
+
+            </td>
+            
+        </tr>
+        {% endfor %}
+    </table>
+    <input type="submit" value="Execute Selected Tasks">
+
+
+
+</body>
+
+</html>
